@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kisumu County Weather Stations Map</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        #map { height: 600px; width: 100%; }
+        .legend { 
+            background: white; 
+            padding: 10px; 
+            border-radius: 5px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .legend i {
+            width: 18px;
+            height: 18px;
+            float: left;
+            margin-right: 8px;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-4">
+        <h1 class="text-3xl font-bold text-center mb-4">Weather Stations in Kisumu County, Kenya</h1>
+        <div id="map"></div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Initialize the map centered on Kisumu County
+        const map = L.map('map').setView([-0.098, 34.750], 10);
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 18
+        }).addTo(map);
+
+        // Custom icons for different station types
+        const awsIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34]
+        });
+
+        const manualIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34]
+        });
+
+        const disdrometerIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34]
+        });
+
+        // Weather station data
+        const stations = [
+            {
+                name: "Ayueyo Village AWS",
+                subCounty: "Kisumu Central",
+                coords: [-0.0917, 34.767],
+                type: "AWS",
+                instruments: "Temperature, humidity, wind, rainfall, soil moisture",
+                status: "Operational",
+                icon: awsIcon
+            },
+            {
+                name: "Kisumu City (KMD Office)",
+                subCounty: "Kisumu Central",
+                coords: [-0.098, 34.750],
+                type: "AWS + Manual",
+                instruments: "Temperature, humidity, wind, rainfall, manual gauges",
+                status: "Operational",
+                icon: awsIcon
+            },
+            {
+                name: "Maseno University",
+                subCounty: "Kisumu West",
+                coords: [-0.006, 34.600],
+                type: "Disdrometer + AWS",
+                instruments: "Osiris laser disdrometer, temperature, humidity, wind, rainfall",
+                status: "Operational",
+                icon: disdrometerIcon
+            },
+            {
+                name: "Ahero AWS",
+                subCounty: "Nyando",
+                coords: [-0.173, 34.917],
+                type: "AWS",
+                instruments: "Temperature, humidity, wind, rainfall, soil moisture",
+                status: "Operational",
+                icon: awsIcon
+            },
+            {
+                name: "Muhoroni AWS",
+                subCounty: "Muhoroni",
+                coords: [-0.150, 35.183],
+                type: "AWS",
+                instruments: "Temperature, humidity, wind, rainfall, soil moisture",
+                status: "Planned/Operational",
+                icon: awsIcon
+            },
+            {
+                name: "Chemelil AWS",
+                subCounty: "Nyando",
+                coords: [-0.083, 35.133],
+                type: "AWS",
+                instruments: "Temperature, humidity, wind, rainfall, soil moisture",
+                status: "Planned",
+                icon: awsIcon
+            },
+            {
+                name: "Kibos AWS",
+                subCounty: "Kisumu East",
+                coords: [-0.067, 34.817],
+                type: "AWS",
+                instruments: "Temperature, humidity, wind, rainfall, soil moisture",
+                status: "Planned",
+                icon: awsIcon
+            },
+            {
+                name: "Seme Manual Gauges",
+                subCounty: "Seme",
+                coords: [-0.150, 34.450],
+                type: "Manual",
+                instruments: "Manual rain gauges",
+                status: "Operational",
+                icon: manualIcon
+            },
+            {
+                name: "Nyakach Manual Gauges",
+                subCounty: "Nyakach",
+                coords: [-0.350, 34.900],
+                type: "Manual",
+                instruments: "Manual rain gauges",
+                status: "Operational",
+                icon: manualIcon
+            }
+        ];
+
+        // Add markers to the map
+        stations.forEach(station => {
+            L.marker(station.coords, { icon: station.icon })
+                .addTo(map)
+                .bindPopup(`
+                    <b>${station.name}</b><br>
+                    Sub-County: ${station.subCounty}<br>
+                    Type: ${station.type}<br>
+                    Instruments: ${station.instruments}<br>
+                    Status: ${station.status}
+                `);
+        });
+
+        // Add a legend
+        const legend = L.control({ position: 'bottomright' });
+        legend.onAdd = function () {
+            const div = L.DomUtil.create('div', 'legend');
+            div.innerHTML = `
+                <h4>Station Types</h4>
+                <i style="background: url(https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png); width: 25px; height: 41px;"></i> Automatic Weather Station (AWS)<br>
+                <i style="background: url(https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png); width: 25px; height: 41px;"></i> Manual Rain Gauge<br>
+                <i style="background: url(https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png); width: 25px; height: 41px;"></i> Disdrometer
+            `;
+            return div;
+        };
+        legend.addTo(map);
+    </script>
+</body>
+</html>
