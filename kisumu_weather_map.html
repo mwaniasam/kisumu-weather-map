@@ -28,6 +28,7 @@
 <body class="bg-gray-100">
     <div class="container mx-auto p-4">
         <h1 class="text-3xl font-bold text-center mb-4">Weather Stations in Kisumu County, Kenya</h1>
+        <p class="text-center text-gray-600 mb-4">Click markers for station details. Colored rectangles highlight sub-county coverage areas.</p>
         <div id="map"></div>
     </div>
 
@@ -74,7 +75,8 @@
                 type: "AWS",
                 instruments: "Temperature, humidity, wind, rainfall, soil moisture",
                 status: "Operational",
-                icon: awsIcon
+                icon: awsIcon,
+                color: '#3388ff'
             },
             {
                 name: "Kisumu City (KMD Office)",
@@ -83,7 +85,8 @@
                 type: "AWS + Manual",
                 instruments: "Temperature, humidity, wind, rainfall, manual gauges",
                 status: "Operational",
-                icon: awsIcon
+                icon: awsIcon,
+                color: '#3388ff'
             },
             {
                 name: "Maseno University",
@@ -92,7 +95,8 @@
                 type: "Disdrometer + AWS",
                 instruments: "Osiris laser disdrometer, temperature, humidity, wind, rainfall",
                 status: "Operational",
-                icon: disdrometerIcon
+                icon: disdrometerIcon,
+                color: '#ff0000'
             },
             {
                 name: "Ahero AWS",
@@ -101,7 +105,8 @@
                 type: "AWS",
                 instruments: "Temperature, humidity, wind, rainfall, soil moisture",
                 status: "Operational",
-                icon: awsIcon
+                icon: awsIcon,
+                color: '#3388ff'
             },
             {
                 name: "Muhoroni AWS",
@@ -110,7 +115,8 @@
                 type: "AWS",
                 instruments: "Temperature, humidity, wind, rainfall, soil moisture",
                 status: "Planned/Operational",
-                icon: awsIcon
+                icon: awsIcon,
+                color: '#3388ff'
             },
             {
                 name: "Chemelil AWS",
@@ -119,7 +125,8 @@
                 type: "AWS",
                 instruments: "Temperature, humidity, wind, rainfall, soil moisture",
                 status: "Planned",
-                icon: awsIcon
+                icon: awsIcon,
+                color: '#3388ff'
             },
             {
                 name: "Kibos AWS",
@@ -128,7 +135,8 @@
                 type: "AWS",
                 instruments: "Temperature, humidity, wind, rainfall, soil moisture",
                 status: "Planned",
-                icon: awsIcon
+                icon: awsIcon,
+                color: '#3388ff'
             },
             {
                 name: "Seme Manual Gauges",
@@ -137,7 +145,8 @@
                 type: "Manual",
                 instruments: "Manual rain gauges",
                 status: "Operational",
-                icon: manualIcon
+                icon: manualIcon,
+                color: '#00ff00'
             },
             {
                 name: "Nyakach Manual Gauges",
@@ -146,11 +155,77 @@
                 type: "Manual",
                 instruments: "Manual rain gauges",
                 status: "Operational",
-                icon: manualIcon
+                icon: manualIcon,
+                color: '#00ff00'
             }
         ];
 
-        // Add markers to the map
+        // Sub-county rectangular bounds
+        const subCountyBounds = [
+            {
+                subCounty: "Kisumu Central",
+                stations: "Ayueyo Village AWS, Kisumu City (KMD Office)",
+                bounds: [[-0.120, 34.730], [-0.070, 34.780]], // [southwest, northeast]
+                color: '#3388ff'
+            },
+            {
+                subCounty: "Kisumu West",
+                stations: "Maseno University",
+                bounds: [[-0.030, 34.580], [0.020, 34.630]],
+                color: '#ff0000'
+            },
+            {
+                subCounty: "Nyando",
+                stations: "Ahero AWS, Chemelil AWS",
+                bounds: [[-0.200, 34.890], [-0.060, 35.160]],
+                color: '#3388ff'
+            },
+            {
+                subCounty: "Muhoroni",
+                stations: "Muhoroni AWS",
+                bounds: [[-0.180, 35.160], [-0.120, 35.210]],
+                color: '#3388ff'
+            },
+            {
+                subCounty: "Kisumu East",
+                stations: "Kibos AWS",
+                bounds: [[-0.090, 34.790], [-0.040, 34.840]],
+                color: '#3388ff'
+            },
+            {
+                subCounty: "Seme",
+                stations: "Seme Manual Gauges",
+                bounds: [[-0.180, 34.420], [-0.120, 34.470]],
+                color: '#00ff00'
+            },
+            {
+                subCounty: "Nyakach",
+                stations: "Nyakach Manual Gauges",
+                bounds: [[-0.380, 34.870], [-0.320, 34.920]],
+                color: '#00ff00'
+            }
+        ];
+
+        // Debug: Log sub-county bounds
+        console.log('Sub-County Bounds:', subCountyBounds);
+
+        // Add rectangles for sub-county coverage
+        subCountyBounds.forEach(area => {
+            console.log(`Rendering rectangle for ${area.subCounty}`);
+            L.rectangle(area.bounds, {
+                color: area.color,
+                fillColor: area.color,
+                fillOpacity: 0.4,
+                weight: 2
+            })
+                .addTo(map)
+                .bindTooltip(
+                    `${area.subCounty} (Served by ${area.stations})`,
+                    { permanent: false, direction: 'top' }
+                );
+        });
+
+        // Add markers
         stations.forEach(station => {
             L.marker(station.coords, { icon: station.icon })
                 .addTo(map)
@@ -168,10 +243,10 @@
         legend.onAdd = function () {
             const div = L.DomUtil.create('div', 'legend');
             div.innerHTML = `
-                <h4>Station Types</h4>
-                <i style="background: url(https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png); width: 25px; height: 41px;"></i> Automatic Weather Station (AWS)<br>
-                <i style="background: url(https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png); width: 25px; height: 41px;"></i> Manual Rain Gauge<br>
-                <i style="background: url(https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png); width: 25px; height: 41px;"></i> Disdrometer
+                <h4>Station Types & Coverage</h4>
+                <i style="background: url(https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png); width: 25px; height: 41px;"></i> AWS (Sub-County)<br>
+                <i style="background: url(https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png); width: 25px; height: 41px;"></i> Manual Rain Gauge (Sub-County)<br>
+                <i style="background: url(https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png); width: 25px; height: 41px;"></i> Disdrometer (Sub-County)
             `;
             return div;
         };
